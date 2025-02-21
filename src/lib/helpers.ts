@@ -27,7 +27,7 @@ export function generateNewGlyphBlock(
   effectId?: number
 ): GlyphBlock {
   const blockEffectId = effectId ?? 0;
-  const blockDuration = durationMilis ?? dataStore.get('newBlockDurationMilis') ?? 500; //safety
+  const blockDuration = durationMilis ?? dataStore.get('newBlockDurationMilis') ?? 100; //safety
   const blockStartingBrightness = startingBrightness ?? dataStore.get('newBlockBrightness') ?? 4095;
   const effectData: number[] = [];
 

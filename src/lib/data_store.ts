@@ -14,7 +14,7 @@ class DataStore {
   private baseConfig: Data = {
     multiSelect: false,
     overwriteBrightnessWithNewBlock: false,
-    newBlockDurationMilis: 500,
+    newBlockDurationMilis: 100,
     playbackSpeed: 1,
     // tracking it for no reason
     isAudioLoaded: false,
