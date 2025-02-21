@@ -60,12 +60,12 @@ export default function MainTopPanel({
   const deviceControlsToShow = generateDeviceControls();
   return (
     <>
-      <div className={`grid rounded-lg p-2  grid-cols-2 overflow-auto max-h-[390px] ${currentDevice === 'NP2' ? 'gap-2' : 'gap-[5%]'}`}>
+      <div className={`rounded-lg p-2 overflow-clip z-30 ${currentDevice === 'NP2' ? 'gap-2' : 'gap-[5%]'}`}>
         {/*1st col - Title n all */}
         <TitleAndControlsPanel />
 
-        {/* 2nd col - Config panel */}
-        <SettingsPanel />
+        {/* 2nd col - Config panel TODO:Fix */}
+        {/* <SettingsPanel /> */}
       </div>
     </>
   );
@@ -73,10 +73,9 @@ export default function MainTopPanel({
   function TitleAndControlsPanel({ className }: { className?: string }) {
     return (
       <div
-        className={`flex flex-col justify-between bg-[#111111] p-4  rounded-md outline outline-[#212121]
-     hover:shadow-[0px_0px_5px_1px_#ffffff] duration-500 overflow-visible ${className}`}
+        className={`flex flex-col justify-between bg-[#111111] p-4  rounded-md outline outline-[#212121] hover:shadow-[0px_0px_5px_1px_#ffffff] duration-500 overflow-visible ${className}`}
       >
-        <div className="space-y-2">
+        <div className="space-y-2 flex flex-row items-center gap-4">
           <h2 className="text-2xl font-bold text-primary">
             <AppNameComponent playing={showEasterEgg} />
             <span className="animate-pulse duration-700 text-red-600">
@@ -84,8 +83,10 @@ export default function MainTopPanel({
             </span>
           </h2>
 
+          <OpenInstructionButton />
+
           {/*  Info content */}
-          <p className="text-muted-foreground">
+          {/* <p className="text-muted-foreground">
             This app is usable but is still being actively being worked upon!
             <br />
             Supports: Nothing Phone (1), (2), (2a) / (2a) Plus
@@ -100,10 +101,8 @@ export default function MainTopPanel({
               {' '}
               (v{kAppVersion})
             </span>
-          </p>
+          </p> */}
         </div>
-
-        <OpenInstructionButton />
 
         {isAudioLoaded && (
           <div className="space-y-3 grid grid-row-2">
