@@ -1,8 +1,6 @@
 import dataStore from '@/lib/data_store';
 import useGlobalAppStore from '@/lib/timeline_state';
 import {
-  // ZoomOut,
-  // ZoomIn,
   ChevronsRightLeft,
   ChevronsLeft,
   Pause,
@@ -17,7 +15,7 @@ import WaveSurfer from 'wavesurfer.js';
 import Hover from 'wavesurfer.js/dist/plugins/hover.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
-import { kWidthBound } from '@/lib/consts';
+
 type Props = {
   audioUrl: string;
   isSaving: boolean;
@@ -44,16 +42,9 @@ export default function AudioControlComponent({
     (state) => state.appSettings.isKeyboardGestureEnabled
   );
   const updateDuration = useGlobalAppStore((state) => state.updateAudioDuration);
-  // const decreasePixelFactor = useGlobalAppStore(
-  //   (state) => state.decreasePixelFactor
-  // );
-  // const increasePixelFactor = useGlobalAppStore(
-  //   (state) => state.increasePixelFactor
-  // );
-
   const timelinePixelFactor = useGlobalAppStore((state) => state.appSettings.timelinePixelFactor);
-
   const regionsRef = useRef(RegionsPlugin.create());
+
   useEffect(() => {
     if (containerRef.current) {
       waveSurferRef.current = WaveSurfer.create({
@@ -85,48 +76,30 @@ export default function AudioControlComponent({
           regionsRef.current
         ]
       });
-      //   Update play status
-      waveSurferRef.current.on('pause', () => {
-        setIsPlayin(false);
-      });
-      waveSurferRef.current.on('play', () => {
-        setIsPlayin(true);
-      });
-      //   Update duration
+
+      waveSurferRef.current.on('pause', () => setIsPlayin(false));
+      waveSurferRef.current.on('play', () => setIsPlayin(true));
       waveSurferRef.current.on('ready', () => {
         dataStore.set('isAudioLoaded', true);
         const audioDurationInSecs = waveSurferRef.current!.getDuration();
         setWidthToForce(audioDurationInSecs * timelinePixelFactor);
         dataStore.set('currentAudioDurationInMilis', audioDurationInSecs * 1000);
         updateDuration(audioDurationInSecs * 1000);
-
-        // Added a bit of delay to ensure that other helper stuff is also rendered
         dataStore.set('audioSrc', audioUrl);
         setTimeout(() => setIsNotLoaded(false), 180);
       });
-      // Runs every instance of playing audio
       waveSurferRef.current.on('timeupdate', () => {
         const currentTimeInMilis = waveSurferRef.current!.getCurrentTime() * 1000;
-
         dataStore.set('currentAudioPositionInMilis', currentTimeInMilis);
-        // update playing indicator position for bottom editor
         const playingIndicator = document.querySelector('#playing_indicator');
         playingIndicator?.setAttribute(
           'style',
           `margin-left: ${(currentTimeInMilis / 1000) * timelinePixelFactor}px`
         );
-
         const storePlaybackRate = dataStore.get('playbackSpeed') as number;
         if (storePlaybackRate !== waveSurferRef.current?.getPlaybackRate()) {
           waveSurferRef.current?.setPlaybackRate(storePlaybackRate, true);
         }
-
-        //   scroll bottom editor - user cant scroll tho meanwhile, so dont lol
-        // editorRef.current?.scrollTo({
-        //   left:
-        //     (currentTimeInMilis / 1000) * timelinePixelFactor - window.screen.width/2,
-        //   behavior: "smooth",
-        // });
       });
 
       // Loop feature via Regions
@@ -195,10 +168,8 @@ export default function AudioControlComponent({
       };
     }
   }, [audioUrl]);
-
-  //   handle keyboard gestures
+  
   useEffect(() => {
-    // Play Pause
     function onSpaceKeyPress(e: KeyboardEvent) {
       if (e.code === 'Space') {
         e.preventDefault();
@@ -208,31 +179,25 @@ export default function AudioControlComponent({
     if (isKeyboardGestureEnabled) {
       window.addEventListener('keypress', onSpaceKeyPress);
     }
-
     return () => window.removeEventListener('keypress', onSpaceKeyPress);
   }, [isKeyboardGestureEnabled]);
 
-  // scroll play controls on scroll
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
-
     window.addEventListener('scroll', handleScroll);
-
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-  //  UI
 
   return (
     <>
-    <AudioControls />
+      <AudioControls />
       {isNotLoaded && (
         <div
-          className="flex z-20 space-x-20
-        top-[16%] dark:invert transition-all duration-300"
+          className="flex z-20 space-x-20 top-[16%] dark:invert transition-all duration-300"
           id="loader-debug"
           style={{
             position: 'fixed',
@@ -277,60 +242,47 @@ export default function AudioControlComponent({
   function AudioControls() {
     const player = waveSurferRef.current;
     if (!player) return <></>;
+
     function handlePlayPause() {
       player!.playPause();
     }
 
+    function goToStart(): void {
+      editorRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
+      player?.seekTo(0);
+    }
+
+    function goToEnd(): void {
+      const duration = player?.getDuration() ?? 0;
+      editorRef.current?.scrollTo({
+        left: duration * timelinePixelFactor,
+        behavior: 'smooth'
+      });
+      player?.seekTo(0.96);
+    }
+
+    function goToMiddle(): void {
+      const duration = player?.getDuration() ?? 0;
+      editorRef.current?.scrollTo({
+        left: (duration / 2) * timelinePixelFactor - window.innerWidth / 2,
+        behavior: 'smooth'
+      });
+      player?.seekTo(0.5);
+    }
+
     return (
-      //   <div className="relative">
       <div
         ref={playControlsBarRef}
-        // putting same width contraints for main upper UI but as max width!
         className={`w-96 fixed left-3 flex justify-evenly items-center border rounded-lg border-white p-4 bg-[#111111] z-[15] max-w-[2280px] ${
           playin ? 'animate-pulse' : ''
         }  hover:shadow-[0px_0px_10px_1px_#777777]`}
-        // style={{
-        //   animationDuration: '1.5s',
-        //   width: `${kWidthBound - 0.5}%`,
-        //   position: 'fixed',
-        //   top: scrollY > 390 ? `40px` : `calc(410px - ${scrollY - 5}px)`,
-        //   left: '50%',
-        //   transform: 'translateX(-50%)',
-        //   transition: 'top 0.3s ease'
-        // }}
       >
         <button onClick={() => player.stop()} title={'Stop'} aria-label="Stop audio button">
           <Square />
         </button>
-        {/* <button
-          onClick={() => {
-            decreasePixelFactor();
-            player.zoom(player.options.minPxPerSec - 50);
-          }}
-          title={"Zoom out timeline"}
-          aria-label="Zoom out timeline"
-        >
-          <ZoomOut />
-        </button>
-        <button
-          onClick={() => {
-            increasePixelFactor();
-            player.zoom(player.options.minPxPerSec + 50);
-          }}
-          title={"Zoom out timeline"}
-          aria-label="Zoom out timeline"
-        >
-          <ZoomIn />
-        </button> */}
-
-        {/* scroll to middle scroll middle */}
-
         <button onClick={goToMiddle} title="Jump to middle">
           <ChevronsRightLeft />
         </button>
-
-        {/* scroll to start scroll start */}
-
         <button onClick={goToStart} title="Jump to start">
           <ChevronsLeft />
         </button>
@@ -341,12 +293,9 @@ export default function AudioControlComponent({
         >
           {playin ? <Pause /> : <Play />}
         </button>
-        {/* scroll to end scroll end */}
-
         <button onClick={goToEnd} title="Jump to end">
           <ChevronsRight />
         </button>
-
         <button
           title={'Save audio'}
           aria-label="save audio button"
@@ -367,31 +316,6 @@ export default function AudioControlComponent({
           <X />
         </button>
       </div>
-      //   </div>
     );
-
-    function goToStart(): void {
-      editorRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
-      // seek audio
-      player?.seekTo(0);
-    }
-    function goToEnd(): void {
-      const duration = player?.getDuration() ?? 0;
-      editorRef.current?.scrollTo({
-        left: duration * timelinePixelFactor,
-        behavior: 'smooth'
-      });
-
-      player?.seekTo(0.96); // few sec offset
-    }
-    function goToMiddle(): void {
-      const duration = player?.getDuration() ?? 0;
-
-      editorRef.current?.scrollTo({
-        left: (duration / 2) * timelinePixelFactor - window.innerWidth / 2,
-        behavior: 'smooth'
-      });
-      player?.seekTo(0.5);
-    }
   }
 }

@@ -12,43 +12,40 @@ import { Ellipsis } from 'lucide-react';
 export default function SettingsPanel() {
   const spanRef = useRef<HTMLLegendElement>(null);
 
-  // get settings
-  const isKeyboardGestureEnabled = useGlobalAppStore(
-    (state) => state.appSettings.isKeyboardGestureEnabled
-  );
-  const isMultiSelectActive = useGlobalAppStore((state) => state.appSettings.isMultiSelectActive);
-  const showAudioTimeStamp = useGlobalAppStore((state) => state.appSettings.showAudioTimeStamp);
-  const snapToBpmActive = useGlobalAppStore((state) => state.appSettings.snapToBpmActive);
-  const isZoneVisible = useGlobalAppStore((state) => state.appSettings.isZoneVisible);
-  const snapSensitivity = useGlobalAppStore((state) => state.appSettings.snapSensitivity);
-  const alsoSnapDuration = useGlobalAppStore((state) => state.appSettings.alsoSnapDuration);
-  const bpmValue = useGlobalAppStore((state) => state.appSettings.bpmValue);
-  const showHeavyUi = useGlobalAppStore((state) => state.appSettings.showHeavyUi);
-  const toggleShowAudioTimeStamp = useGlobalAppStore((state) => state.toggleShowAudioTimeStamp);
-  const toggleKeyboardGesture = useGlobalAppStore((state) => state.toggleKeyboardGesture);
-  const toggleMultiSelect = useGlobalAppStore((state) => state.toggleMultiSelect);
-  const toggleAlsoSnapBlockDuration = useGlobalAppStore(
-    (state) => state.toggleAlsoSnapBlockDuration
-  );
-  const toggleShowShowHeavyUi = useGlobalAppStore((state) => state.toggleShowShowHeavyUi);
-  const toggleSnapToBpm = useGlobalAppStore((state) => state.toggleSnapToBpm);
-  const toggleZoneVisibility = useGlobalAppStore((state) => state.toggleZoneVisibility);
+  const {
+    appSettings: {
+      isKeyboardGestureEnabled,
+      isMultiSelectActive,
+      showAudioTimeStamp,
+      snapToBpmActive,
+      isZoneVisible,
+      snapSensitivity,
+      alsoSnapDuration,
+      bpmValue,
+      showHeavyUi,
+      showHoverGlyphPreview,
+    },
+    toggleShowAudioTimeStamp,
+    toggleKeyboardGesture,
+    toggleMultiSelect,
+    toggleAlsoSnapBlockDuration,
+    toggleShowShowHeavyUi,
+    toggleSnapToBpm,
+    toggleZoneVisibility,
+    setBpmForSnap,
+    setSnapSensitivity,
+    toggleShowHoverGlyphPreview,
+  } = useGlobalAppStore((state) => state);
 
-  const setBpmForSnap = useGlobalAppStore((state) => state.setBpmForSnap);
-  const setSnapSensitivity = useGlobalAppStore((state) => state.setSnapSensitivity);
-  const showHoverGlyphPreview = useGlobalAppStore(
-    (state) => state.appSettings.showHoverGlyphPreview
-  );
-  const toggleShowHoverGlyphPreview = useGlobalAppStore(
-    (state) => state.toggleShowHoverGlyphPreview
-  );
   const toggleDragSelect = () => {
-    const isDragSelectActive: boolean = dataStore.get('isDragSelectActive') ?? false;
+    const isDragSelectActive = dataStore.get('isDragSelectActive') ?? false;
     dataStore.set('isDragSelectActive', !isDragSelectActive);
   };
+
   const onPasteBrightnessOverwriteToggle = (e: boolean) => {
     dataStore.set('overwriteBrightnessWithNewBlock', e);
   };
+
   const onBpmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.currentTarget.value);
     if (value * 60 > (dataStore.get('currentAudioDurationInMilis') as number)) {
@@ -62,8 +59,7 @@ export default function SettingsPanel() {
   };
 
   const onSnapSensitivityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.currentTarget.value);
-    setSnapSensitivity(value);
+    setSnapSensitivity(parseInt(e.currentTarget.value));
   };
 
   const onNewBlockDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,10 +72,8 @@ export default function SettingsPanel() {
   };
 
   const onNewBlockBrightnessChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Max val -> 4095
     const selectedValue = parseInt(e.currentTarget.value);
     const value = Math.round((selectedValue / 100) * 4095);
-    // console.log(value);
     if (selectedValue >= 1 && selectedValue <= 100) {
       dataStore.set('newBlockBrightness', value);
     } else {
@@ -92,7 +86,6 @@ export default function SettingsPanel() {
     if (value >= 0.1 && value <= 16) {
       dataStore.set('audioSpeed', value);
       try {
-        //patch via datastore
         dataStore.set('playbackSpeed', value);
       } catch (e) {
         console.error(`Error while setting audio rate: ${e}`);
@@ -101,257 +94,56 @@ export default function SettingsPanel() {
       showPopUp('Invalid Value - Audio Speed', 'Should be between 0.1x to 16x');
     }
   };
-  //  UI
+
   return (
-    <>
-      {/* Config panel */}
-      <div className="dropdown dropdown-left">
-        <div tabIndex={0} role="button" className="btn w-12 m-1 rounded-full"><Ellipsis/></div>
-        <ul tabIndex={0} className="dropdown-content bg-base-100 rounded-box z-[1] w-72 p-2 shadow">
-          <form>
-            {/* COntrol Grid - match height to left panel  */}
-            <fieldset className="grid grid-cols-2 items-center gap-2 border rounded-lg px-4 py-1 pb-3 overflow-auto hover:shadow-[0px_0px_5px_1px_#aaaaaa] duration-500 bg-[#111111] max-h-[380px]">
-              <legend
-                className="-ml-1 px-1 font-medium font-[ndot] text-lg tracking-wide  "
-                ref={spanRef}
-                onMouseLeave={() => {
-                  if (spanRef.current) {
-                    spanRef.current.style.textShadow = '';
-                  }
-                }}
-                onMouseEnter={() => {
-                  if (spanRef.current) {
-                    spanRef.current.style.textShadow = '#fff 8px 0 20px';
-                  }
-                }}
-              >
-                SETTINGS
-              </legend>
-              {/* Configure Device */}
-              <Label htmlFor="multiSelect" className="text-lg font-light">
-                Device
-              </Label>
-              <DeviceChoiceComponent />
-
-              {/* Configure block time */}
-              <Label htmlFor="newBlockDurationMilis" className="text-lg font-light">
-                New Glyph Duration (ms)
-                <br />
-              </Label>
-              <Input
-                id="newBlockDurationMilis"
-                type="number"
-                defaultValue={dataStore.get('newBlockDurationMilis') ?? 100}
-                max={10000}
-                min={20}
-                step={1}
-                onChange={onNewBlockDurationChange}
-              />
-
-              {/* Configure new block brightness */}
-              <Label htmlFor="newBlockBrightness" className="text-lg font-light">
-                New Glyph Brightness (%)
-                <br />
-              </Label>
-              <Input
-                onChange={onNewBlockBrightnessChange}
-                id="newBlockBrightness"
-                type="number"
-                defaultValue={
-                  (((dataStore.get('newBlockBrightness') as number) ?? 3072) / kMaxBrightness) * 100
-                }
-                max={100}
-                min={1}
-                step={1}
-              />
-
-              {/* Configure audio speed */}
-              <Label
-                htmlFor="newBlockBrightness"
-                className="text-lg font-light"
-                title="Set audio's playback speed. Values can range from 0.5x till 2x, in steps of 0.1x, if needed."
-              >
-                Audio Speed
-                <br />
-              </Label>
-              <Input
-                onChange={onAudioSpeedChange}
-                id="newBlockBrightness"
-                type="number"
-                defaultValue={dataStore.get('audioSpeed') ?? 1}
-                max={16}
-                min={0.1}
-                step={0.05}
-              />
-              {/* MultiSelect */}
-              <Label htmlFor="multiSelect" className="text-lg font-light">
-                Enable Multi-Select
-              </Label>
-              <Switch
-                id="multiSelect"
-                onCheckedChange={toggleMultiSelect}
-                checked={isMultiSelectActive}
-              />
-
-              {/* Drag Select */}
-              <Label
-                htmlFor="dragSelect"
-                className="text-lg font-light"
-                title={`Enables Drag to Multi Select Gesture`}
-              >
-                Enable Drag Select
-              </Label>
-              <Switch
-                id="dragSelect"
-                onCheckedChange={toggleDragSelect}
-              // checked={dataStore.get('isDragSelectActive') ?? false}
-              />
-
-              {/* Show audio timestamp */}
-              <Label
-                htmlFor="showAudioTimeStamp"
-                className="text-lg font-light"
-                title="Overwrite the brightness of blocks that would be pasted with the new block brightness value?"
-              >
-                Show Audio TimeStamp
-              </Label>
-              <Switch
-                id="showAudioTimeStamp"
-                onCheckedChange={toggleShowAudioTimeStamp}
-                checked={showAudioTimeStamp}
-              />
-
-              {/* Toggle zones feat. */}
-              <Label
-                htmlFor="toggleZones"
-                className="text-lg font-light"
-                title="Toggle Glyph Zones ID ? Scroll on bottom editor to trigger if it's not visible..."
-              >
-                Show Glyph Zones
-              </Label>
-              <Switch id="toggleZones" onCheckedChange={toggleZoneVisibility} checked={isZoneVisible} />
-
-              {/* Keyboard controls */}
-              <Label
-                htmlFor="keyboardControls"
-                className="text-lg font-light"
-                title={`Enables keyboard controls like:\n-Pressing Spacebar to Play / Pause Audio.\n-Pressing Delete / Backspace to Delete selected Glyph Blocks\n-Shift to Select multiple at a time\n-Ctrl+Z / Cmd+Z to Undo\n-Ctrl+Y to Redo\n-Ctrl+A / Cmd + A to Select All`}
-              >
-                Enable Keyboard Gesture
-              </Label>
-              <Switch
-                id="keyboardControls"
-                onCheckedChange={toggleKeyboardGesture}
-                checked={isKeyboardGestureEnabled}
-              />
-
-              {/* Snap to BPM feat. */}
-              <Label
-                htmlFor="snapToBPM"
-                className="text-lg font-light"
-                title="Enable for blocks to snap to Audio BPM?"
-              >
-                Snap to BPM
-              </Label>
-              <Switch id="snapToBPM" onCheckedChange={toggleSnapToBpm} checked={snapToBpmActive} />
-
-              {/* Snap to BPM feat. - allow duration to also snap */}
-              <Label
-                htmlFor="snapToDurationToBPM"
-                className="text-lg font-light"
-                title="Enable for blocks' duration to also snap to Audio BPM? Snap to BPM must be switched on too, for this to apply."
-              >
-                Snap Duration to BPM
-              </Label>
-              <Switch
-                id="snapToDurationToBPM"
-                onCheckedChange={toggleAlsoSnapBlockDuration}
-                checked={alsoSnapDuration}
-              />
-
-              {/* Configure BPM */}
-              <Label
-                htmlFor="setBPM"
-                className="text-lg font-light"
-                title="Set audio's BPM. Applies to and used to configure the above, Snap to BPM settings."
-              >
-                Audio BPM
-                <br />
-              </Label>
-              <Input
-                onChange={onBpmChange}
-                id="setBPM"
-                type="number"
-                defaultValue={bpmValue}
-                max={700}
-                min={1}
-                step={1}
-              />
-
-              {/* Configure Snap Sens */}
-              <Label
-                htmlFor="snapSens"
-                className="text-lg font-light"
-                title="Higher value here means lower sensitivity overall."
-              >
-                Snap Inverse Sensitivity
-                <br />
-              </Label>
-              <Input
-                onChange={onSnapSensitivityChange}
-                id="snapSens"
-                type="number"
-                defaultValue={snapSensitivity}
-                max={25}
-                min={13}
-                step={1}
-              />
-
-              {/* Render Heavy Ui */}
-              <Label
-                htmlFor="renderHeavy"
-                className="text-lg font-light"
-                title="Render more demanding UI? Only do this if PC can support it!"
-              >
-                Switch to Heavy UI?
-              </Label>
-              <Switch
-                id="renderHeavy"
-                onCheckedChange={toggleShowShowHeavyUi}
-                checked={showHeavyUi}
-              />
-
-              {/* Glyph Preview on Hover */}
-              <Label
-                htmlFor="glyphZonePreviewOnHover"
-                className="text-lg font-light"
-                title="Show which Glyph Zone a Row in the Editor Corresponds to on Hover?"
-              >
-                Glyph Preview on Hover
-              </Label>
-              <Switch
-                id="glyphZonePreviewOnHover"
-                onCheckedChange={toggleShowHoverGlyphPreview}
-                checked={showHoverGlyphPreview}
-              />
-
-              {/* Modifiable paste brightness */}
-              <Label
-                htmlFor="overwriteBrightness"
-                className="text-lg font-light"
-                title="Overwrite the brightness of blocks that would be pasted with the new block brightness value?"
-              >
-                Modify Paste Brightness
-              </Label>
-              <Switch
-                id="overwriteBrightness"
-                onCheckedChange={onPasteBrightnessOverwriteToggle}
-                defaultValue={dataStore.get('overwriteBrightnessWithNewBlock')}
-              />
-            </fieldset>
-          </form>
-        </ul>
-      </div>
-    </>
+    <div className="dropdown dropdown-left">
+      <div tabIndex={0} role="button" className="btn w-12 m-1 rounded-full"><Ellipsis/></div>
+      <ul tabIndex={0} className="dropdown-content bg-base-100 rounded-box z-[1] w-72 p-2 shadow">
+        <form>
+          <fieldset className="grid grid-cols-2 items-center gap-2 border rounded-lg px-4 py-1 pb-3 overflow-auto hover:shadow-[0px_0px_5px_1px_#aaaaaa] duration-500 bg-[#111111] max-h-[380px]">
+            <legend
+              className="-ml-1 px-1 font-medium font-[ndot] text-lg tracking-wide"
+              ref={spanRef}
+              onMouseLeave={() => spanRef.current && (spanRef.current.style.textShadow = '')}
+              onMouseEnter={() => spanRef.current && (spanRef.current.style.textShadow = '#fff 8px 0 20px')}
+            >
+              SETTINGS
+            </legend>
+            <Label htmlFor="multiSelect" className="text-lg font-light">Device</Label>
+            <DeviceChoiceComponent />
+            <Label htmlFor="newBlockDurationMilis" className="text-lg font-light">New Glyph Duration (ms)</Label>
+            <Input id="newBlockDurationMilis" type="number" defaultValue={dataStore.get('newBlockDurationMilis') ?? 100} max={10000} min={20} step={1} onChange={onNewBlockDurationChange} />
+            <Label htmlFor="newBlockBrightness" className="text-lg font-light">New Glyph Brightness (%)</Label>
+            <Input id="newBlockBrightness" type="number" defaultValue={(((dataStore.get('newBlockBrightness') as number) ?? 3072) / kMaxBrightness) * 100} max={100} min={1} step={1} onChange={onNewBlockBrightnessChange} />
+            <Label htmlFor="newBlockBrightness" className="text-lg font-light" title="Set audio's playback speed. Values can range from 0.5x till 2x, in steps of 0.1x, if needed.">Audio Speed</Label>
+            <Input id="newBlockBrightness" type="number" defaultValue={dataStore.get('audioSpeed') ?? 1} max={16} min={0.1} step={0.05} onChange={onAudioSpeedChange} />
+            <Label htmlFor="multiSelect" className="text-lg font-light">Enable Multi-Select</Label>
+            <Switch id="multiSelect" onCheckedChange={toggleMultiSelect} checked={isMultiSelectActive} />
+            <Label htmlFor="dragSelect" className="text-lg font-light" title="Enables Drag to Multi Select Gesture">Enable Drag Select</Label>
+            <Switch id="dragSelect" onCheckedChange={toggleDragSelect} />
+            <Label htmlFor="showAudioTimeStamp" className="text-lg font-light" title="Overwrite the brightness of blocks that would be pasted with the new block brightness value?">Show Audio TimeStamp</Label>
+            <Switch id="showAudioTimeStamp" onCheckedChange={toggleShowAudioTimeStamp} checked={showAudioTimeStamp} />
+            <Label htmlFor="toggleZones" className="text-lg font-light" title="Toggle Glyph Zones ID ? Scroll on bottom editor to trigger if it's not visible...">Show Glyph Zones</Label>
+            <Switch id="toggleZones" onCheckedChange={toggleZoneVisibility} checked={isZoneVisible} />
+            <Label htmlFor="keyboardControls" className="text-lg font-light" title="Enables keyboard controls like: Pressing Spacebar to Play / Pause Audio. Pressing Delete / Backspace to Delete selected Glyph Blocks Shift to Select multiple at a time Ctrl+Z / Cmd+Z to Undo Ctrl+Y to Redo Ctrl+A / Cmd + A to Select All">Enable Keyboard Gesture</Label>
+            <Switch id="keyboardControls" onCheckedChange={toggleKeyboardGesture} checked={isKeyboardGestureEnabled} />
+            <Label htmlFor="snapToBPM" className="text-lg font-light" title="Enable for blocks to snap to Audio BPM?">Snap to BPM</Label>
+            <Switch id="snapToBPM" onCheckedChange={toggleSnapToBpm} checked={snapToBpmActive} />
+            <Label htmlFor="snapToDurationToBPM" className="text-lg font-light" title="Enable for blocks' duration to also snap to Audio BPM? Snap to BPM must be switched on too, for this to apply.">Snap Duration to BPM</Label>
+            <Switch id="snapToDurationToBPM" onCheckedChange={toggleAlsoSnapBlockDuration} checked={alsoSnapDuration} />
+            <Label htmlFor="setBPM" className="text-lg font-light" title="Set audio's BPM. Applies to and used to configure the above, Snap to BPM settings.">Audio BPM</Label>
+            <Input id="setBPM" type="number" defaultValue={bpmValue} max={700} min={1} step={1} onChange={onBpmChange} />
+            <Label htmlFor="snapSens" className="text-lg font-light" title="Higher value here means lower sensitivity overall.">Snap Inverse Sensitivity</Label>
+            <Input id="snapSens" type="number" defaultValue={snapSensitivity} max={25} min={13} step={1} onChange={onSnapSensitivityChange} />
+            <Label htmlFor="renderHeavy" className="text-lg font-light" title="Render more demanding UI? Only do this if PC can support it!">Switch to Heavy UI?</Label>
+            <Switch id="renderHeavy" onCheckedChange={toggleShowShowHeavyUi} checked={showHeavyUi} />
+            <Label htmlFor="glyphZonePreviewOnHover" className="text-lg font-light" title="Show which Glyph Zone a Row in the Editor Corresponds to on Hover?">Glyph Preview on Hover</Label>
+            <Switch id="glyphZonePreviewOnHover" onCheckedChange={toggleShowHoverGlyphPreview} checked={showHoverGlyphPreview} />
+            <Label htmlFor="overwriteBrightness" className="text-lg font-light" title="Overwrite the brightness of blocks that would be pasted with the new block brightness value?">Modify Paste Brightness</Label>
+            <Switch id="overwriteBrightness" onCheckedChange={onPasteBrightnessOverwriteToggle} defaultValue={dataStore.get('overwriteBrightnessWithNewBlock')} />
+          </fieldset>
+        </form>
+      </ul>
+    </div>
   );
 }

@@ -8,7 +8,6 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { kAllowedModels, kPhoneModelNames } from '@/lib/consts';
-
 import useGlobalAppStore from '@/lib/timeline_state';
 import { toast } from 'sonner';
 
@@ -16,17 +15,6 @@ export default function DeviceChoiceComponent() {
   const currentDevice = useGlobalAppStore((state) => state.phoneModel);
   const { clear } = useGlobalAppStore.temporal.getState();
   const changePhoneModel = useGlobalAppStore((state) => state.changePhoneModel);
-
-  // Get all selectable Items
-  const selectableItems = [];
-  for (let i = 0; i < kAllowedModels.length; i++) {
-    const currentAllowedDevice = kAllowedModels[i];
-    selectableItems.push(
-      <SelectItem key={i} value={currentAllowedDevice}>
-        {kPhoneModelNames[currentAllowedDevice]}
-      </SelectItem>
-    );
-  }
 
   return (
     <Select
@@ -42,9 +30,7 @@ export default function DeviceChoiceComponent() {
             duration: 2500
           });
         }
-
         changePhoneModel(e);
-        // clear undo n redo states
         clear();
       }}
     >
@@ -54,7 +40,11 @@ export default function DeviceChoiceComponent() {
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Nothing Phones</SelectLabel>
-          {selectableItems}
+          {kAllowedModels.map((model, index) => (
+            <SelectItem key={index} value={model}>
+              {kPhoneModelNames[model]}
+            </SelectItem>
+          ))}
         </SelectGroup>
       </SelectContent>
     </Select>

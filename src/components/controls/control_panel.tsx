@@ -7,7 +7,6 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import InstructionComponent from '../timeline/instructions';
-
 import {
   Copy,
   Clipboard,
@@ -47,34 +46,23 @@ export default function MainTopPanel({
   const { undo, redo, futureStates, pastStates } = useTemporalStore((state) => state);
 
   function getPosition(): number {
-    const positionInMilis: number = dataStore.get('currentAudioPositionInMilis') ?? 0;
-    return positionInMilis;
+    return dataStore.get('currentAudioPositionInMilis') ?? 0;
   }
+
   const [selectAll, setSelectAll] = useState<boolean>(true);
-  // easter egg
   const [showEasterEgg, setShowEasterEgg] = useState<boolean>(false);
-  const toggleEasterEgg = () => {
-    setShowEasterEgg((v) => !v);
-  };
+  const toggleEasterEgg = () => setShowEasterEgg((v) => !v);
 
   const deviceControlsToShow = generateDeviceControls();
   return (
-    <>
-      <div className={`rounded-lg p-2 overflow-clip z-30 ${currentDevice === 'NP2' ? 'gap-2' : 'gap-[5%]'}`}>
-        {/*1st col - Title n all */}
-        <TitleAndControlsPanel />
-
-        {/* 2nd col - Config panel TODO:Fix */}
-        {/* <SettingsPanel /> */}
-      </div>
-    </>
+    <div className={`rounded-lg p-2 overflow-clip z-30 ${currentDevice === 'NP2' ? 'gap-2' : 'gap-[5%]'}`}>
+      <TitleAndControlsPanel />
+    </div>
   );
 
   function TitleAndControlsPanel({ className }: { className?: string }) {
     return (
-      <div
-        className={`flex flex-col justify-between bg-[#111111] p-4  rounded-md outline outline-[#212121] hover:shadow-[0px_0px_5px_1px_#ffffff] duration-500 overflow-visible ${className}`}
-      >
+      <div className={`flex flex-col justify-between bg-[#111111] p-4 rounded-md outline outline-[#212121] hover:shadow-[0px_0px_5px_1px_#ffffff] duration-500 overflow-visible ${className}`}>
         <div className="space-y-2 flex flex-row items-center gap-4">
           <h2 className="text-2xl font-bold text-primary">
             <AppNameComponent playing={showEasterEgg} />
@@ -82,37 +70,12 @@ export default function MainTopPanel({
               {isSaving ? '[Saving...]' : ''}
             </span>
           </h2>
-
           <OpenInstructionButton />
-
-          {/*  Info content */}
-          {/* <p className="text-muted-foreground">
-            This app is usable but is still being actively being worked upon!
-            <br />
-            Supports: Nothing Phone (1), (2), (2a) / (2a) Plus
-            <br />
-            Use on fullscreen Desktop / Laptop
-            <br />
-            <span
-              onDoubleClick={toggleEasterEgg}
-              className="cursor- select-none"
-              title="Easter egg?"
-            >
-              {' '}
-              (v{kAppVersion})
-            </span>
-          </p> */}
         </div>
-
         {isAudioLoaded && (
           <div className="space-y-3 grid grid-row-2">
-            {/* Command Center */}
             <CommandCenter />
-            {/* Glyph Zone Add Center */}
-            <div
-              className="grid grid-flow-col border border-white rounded-lg"
-              title="Macro Buttons - Eases New Glyph Block Addition"
-            >
+            <div className="grid grid-flow-col border border-white rounded-lg" title="Macro Buttons - Eases New Glyph Block Addition">
               {deviceControlsToShow}
             </div>
           </div>
@@ -122,510 +85,151 @@ export default function MainTopPanel({
   }
 
   function generateDeviceControls() {
+    const controls: JSX.Element[] = [];
+    const addControl = (label: string, start: number, end?: number) => {
+      controls.push(
+        <Button
+          variant="ghost"
+          onClick={() => {
+            const startTimeMilis = getPosition();
+            end !== undefined ? fillEntireZone(start, end, startTimeMilis) : addItem(start, startTimeMilis);
+          }}
+        >
+          {label}
+        </Button>
+      );
+    };
+
     switch (currentDevice) {
       case 'NP1':
-        return (
-          <>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(0, startTimeMilis);
-              }}
-            >
-              1
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(1, startTimeMilis);
-              }}
-            >
-              2
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(2, startTimeMilis);
-              }}
-            >
-              3
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(3, startTimeMilis);
-              }}
-            >
-              4
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(4, startTimeMilis);
-              }}
-            >
-              5
-            </Button>
-          </>
-        );
-
+        for (let i = 0; i < 5; i++) addControl((i + 1).toString(), i);
+        break;
       case 'NP1_15':
-        return (
-          <div className="grid grid-flow-rows grid-cols-6 lg:flex">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(0, startTimeMilis);
-              }}
-            >
-              1
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(1, startTimeMilis);
-              }}
-            >
-              2
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(2, 5, startTimeMilis);
-              }}
-            >
-              3
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(4, startTimeMilis);
-              }}
-            >
-              3.1
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(5, startTimeMilis);
-              }}
-            >
-              3.2
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(2, startTimeMilis);
-              }}
-            >
-              3.3
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(3, startTimeMilis);
-              }}
-            >
-              3.4
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(7, 14, startTimeMilis);
-              }}
-            >
-              4
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(7, 8, startTimeMilis);
-              }}
-            >
-              4.1
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(9, 11, startTimeMilis);
-              }}
-            >
-              4.2
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(12, 14, startTimeMilis);
-              }}
-            >
-              4.3
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(6, startTimeMilis);
-              }}
-            >
-              5
-            </Button>
-          </div>
-        );
-
+        for (let i = 0; i < 6; i++) addControl((i + 1).toString(), i);
+        addControl('3.1', 4);
+        addControl('3.2', 5);
+        addControl('3.3', 2);
+        addControl('3.4', 3);
+        addControl('4', 7, 14);
+        addControl('4.1', 7, 8);
+        addControl('4.2', 9, 11);
+        addControl('4.3', 12, 14);
+        addControl('5', 6);
+        break;
       case 'NP2':
-        return (
-          <div className="grid grid-cols-5 sm:grid-cols-[repeat(15,minmax(0,1fr))]">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(0, startTimeMilis);
-              }}
-            >
-              1
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(1, startTimeMilis);
-              }}
-            >
-              2
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(2, startTimeMilis);
-              }}
-            >
-              3
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(3, 7, startTimeMilis);
-              }}
-            >
-              4
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(8, 14, startTimeMilis);
-              }}
-            >
-              5
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(15, 18, startTimeMilis);
-              }}
-            >
-              6
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(19, startTimeMilis);
-              }}
-            >
-              7
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(20, startTimeMilis);
-              }}
-            >
-              8
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(21, startTimeMilis);
-              }}
-            >
-              9
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(22, startTimeMilis);
-              }}
-            >
-              10
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(23, startTimeMilis);
-              }}
-            >
-              11
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(25, 27, startTimeMilis);
-              }}
-            >
-              12
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(28, 30, startTimeMilis);
-              }}
-            >
-              13
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(31, 32, startTimeMilis);
-              }}
-            >
-              14
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(24, startTimeMilis);
-              }}
-            >
-              15
-            </Button>
-          </div>
-        );
-
+        for (let i = 0; i < 15; i++) addControl((i + 1).toString(), i);
+        addControl('4', 3, 7);
+        addControl('5', 8, 14);
+        addControl('6', 15, 18);
+        addControl('7', 19);
+        addControl('8', 20);
+        addControl('9', 21);
+        addControl('10', 22);
+        addControl('11', 23);
+        addControl('12', 25, 27);
+        addControl('13', 28, 30);
+        addControl('14', 31, 32);
+        addControl('15', 24);
+        break;
       case 'NP2a':
-        return (
-          <>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(0, 23, startTimeMilis);
-              }}
-            >
-              1
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(0, 7, startTimeMilis);
-              }}
-            >
-              1.1
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(8, 15, startTimeMilis);
-              }}
-            >
-              1.2
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(16, 23, startTimeMilis);
-              }}
-            >
-              1.3
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(24, startTimeMilis);
-              }}
-            >
-              2
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                addItem(25, startTimeMilis);
-              }}
-            >
-              3
-            </Button>
-          </>
-        );
-
+        addControl('1', 0, 23);
+        addControl('1.1', 0, 7);
+        addControl('1.2', 8, 15);
+        addControl('1.3', 16, 23);
+        addControl('2', 24);
+        addControl('3', 25);
+        break;
       default:
         return <></>;
     }
+    return controls;
   }
 
   function CommandCenter() {
     return (
-      <>
-        <div className="border rounded-lg border-white grid grid-flow-col">
-          {/* copy button */}
-          <Button variant="ghost" onClick={copyItems} title={'Copy'} aria-label="copy button">
-            <Copy />
-          </Button>
-          {/* Cut button */}
-          <Button variant="ghost" onClick={cutItems} title={'Cut'} aria-label="cut button">
-            <Scissors />
-          </Button>
-          {/* Paste button */}
-          <Button variant="ghost" onClick={pasteItems} title={'Paste'} aria-label="paste button">
-            <Clipboard />
-          </Button>
-          {/* Delete button */}
+      <div className="border rounded-lg border-white grid grid-flow-col">
+        <Button variant="ghost" onClick={copyItems} title={'Copy'} aria-label="copy button">
+          <Copy />
+        </Button>
+        <Button variant="ghost" onClick={cutItems} title={'Cut'} aria-label="cut button">
+          <Scissors />
+        </Button>
+        <Button variant="ghost" onClick={pasteItems} title={'Paste'} aria-label="paste button">
+          <Clipboard />
+        </Button>
+        <Button variant="ghost" onClick={removeSelectedItem} title={'Delete Selected'} aria-label="delete button">
+          <Trash />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            selectAllItems(selectAll);
+            setSelectAll((v) => !v);
+          }}
+          title={'Select / Unselect All'}
+          aria-label="select or unselect all button"
+        >
+          <SquareDashedMousePointer />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={selectInCurrentPosition}
+          title={'Select / Unselect All Blocks at Current Audio Position; Shortcut Keys: Ctrl + Alt/Option + A'}
+          aria-label="select items in current audio position"
+        >
+          <TextCursorInput />
+        </Button>
+        <Button
+          variant="ghost"
+          title="Undo Changes"
+          disabled={pastStates.length <= 0}
+          onClick={() => {
+            undo();
+            undo();
+          }}
+        >
+          <UndoDot />
+        </Button>
+        <Button
+          variant="ghost"
+          title="Redo Changes"
+          disabled={futureStates.length <= 0}
+          onClick={() => {
+            redo();
+            redo();
+          }}
+        >
+          <RedoDot />
+        </Button>
+        {currentDevice === 'NP1' && (
           <Button
             variant="ghost"
-            onClick={removeSelectedItem}
-            title={'Delete Selected'}
-            aria-label="delete button"
-          >
-            <Trash />
-          </Button>
-          {/* select all button unselect all */}
-          <Button
-            variant="ghost"
+            title="Add all the Glyphs of NP(1)"
             onClick={() => {
-              selectAllItems(selectAll);
-              setSelectAll((v) => !v);
-            }}
-            title={'Select / Unselect All'}
-            aria-label="select or unselect all button"
-          >
-            <SquareDashedMousePointer />
-          </Button>
-          {/* Select in current position */}
-          <Button
-            variant="ghost"
-            onClick={() => {
-              selectInCurrentPosition();
-            }}
-            title={
-              'Select / Unselect All Blocks at Current Audio Position; Shortcut Keys: Ctrl + Alt/Option + A'
-            }
-            aria-label="select items in current audio position"
-          >
-            <TextCursorInput />
-          </Button>
-          {/* Undo */}
-          <Button
-            variant="ghost"
-            title="Undo Changes"
-            disabled={pastStates.length <= 0}
-            onClick={() => {
-              // twice cuz selection changes should be skipped
-
-              undo();
-              undo();
-            }}
-          >
-            <UndoDot />
-          </Button>
-          {/* Redo */}
-          <Button
-            variant="ghost"
-            title="Redo Changes"
-            disabled={futureStates.length <= 0}
-            onClick={() => {
-              // twice cuz selection changes should be skipped
-              redo();
-              redo();
+              const startTimeMilis = getPosition();
+              fillEntireZone(0, 4, startTimeMilis);
             }}
           >
-            <RedoDot />
+            <SquarePlus />
           </Button>
-          {/* Add All Glyphs Button */}
-          {/* ========== PHONE 1  ============= */}
-          {currentDevice === 'NP1' && (
+        )}
+        {currentDevice === 'NP1_15' && (
+          <Button
+            variant="ghost"
+            title="Add all the Glyphs of NP(1) | 15 Zone Mode"
+            onClick={() => {
+              const startTimeMilis = getPosition();
+              fillEntireZone(0, 14, startTimeMilis);
+            }}
+          >
+            <SquarePlus />
+          </Button>
+        )}
+        {currentDevice === 'NP2' && (
+          <>
             <Button
               variant="ghost"
-              title="Add all the Glyphs of NP(1) "
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(0, 4, startTimeMilis);
-              }}
-            >
-              <SquarePlus />
-            </Button>
-          )}
-          {/* ========== PHONE 1 | 15 Zone ============= */}
-
-          {currentDevice === 'NP1_15' && (
-            <Button
-              variant="ghost"
-              title="Add all the Glyphs of NP(1) | 15 Zone Mode "
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(0, 14, startTimeMilis);
-              }}
-            >
-              <SquarePlus />
-            </Button>
-          )}
-
-          {/* Phone 2 | 33 Zone Mode | Add all glyphs */}
-          {currentDevice === 'NP2' && (
-            <Button
-              variant="ghost"
-              title="Add all the Glyphs of NP(2) "
+              title="Add all the Glyphs of NP(2)"
               onClick={() => {
                 const startTimeMilis = getPosition();
                 fillEntireZone(0, 32, startTimeMilis);
@@ -633,11 +237,9 @@ export default function MainTopPanel({
             >
               <SquarePlus />
             </Button>
-          )}
-          {currentDevice === 'NP2' && (
             <Button
               variant="ghost"
-              title="Fill the Top Right Glyph Zone of NP(2) "
+              title="Fill the Top Right Glyph Zone of NP(2)"
               onClick={() => {
                 const startTimeMilis = getPosition();
                 fillEntireZone(3, 18, startTimeMilis);
@@ -645,11 +247,9 @@ export default function MainTopPanel({
             >
               <DiamondPlus />
             </Button>
-          )}
-          {currentDevice === 'NP2' && (
             <Button
               variant="ghost"
-              title="Fill the Battery Glyph Zone of NP(2) "
+              title="Fill the Battery Glyph Zone of NP(2)"
               onClick={() => {
                 const startTimeMilis = getPosition();
                 fillEntireZone(25, 32, startTimeMilis);
@@ -657,26 +257,22 @@ export default function MainTopPanel({
             >
               <CirclePlus />
             </Button>
-          )}
-
-          {/* Phone 2a Add all glyphs */}
-          {currentDevice === 'NP2a' && (
-            <Button
-              variant="ghost"
-              title="Add all the Glyphs of NP(1) | 15 Zone Mode "
-              onClick={() => {
-                const startTimeMilis = getPosition();
-                fillEntireZone(0, 25, startTimeMilis);
-              }}
-            >
-              <SquarePlus />
-            </Button>
-          )}
-
-          {/* More menu items */}
-          <MoreMenuButton />
-        </div>
-      </>
+          </>
+        )}
+        {currentDevice === 'NP2a' && (
+          <Button
+            variant="ghost"
+            title="Add all the Glyphs of NP(1) | 15 Zone Mode"
+            onClick={() => {
+              const startTimeMilis = getPosition();
+              fillEntireZone(0, 25, startTimeMilis);
+            }}
+          >
+            <SquarePlus />
+          </Button>
+        )}
+        <MoreMenuButton />
+      </div>
     );
   }
 }

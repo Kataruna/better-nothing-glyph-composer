@@ -10,26 +10,26 @@ export default function BPMSnapGridLinesComponent({
   durationInMilis: number;
   timelinePixelFactor: number;
 }) {
-  return useMemo(() => {
+  const bpmSnapGridLines = useMemo(() => {
     const beatDurationInMilis = calculateBeatDurationInMilis(bpmValue);
     const gridWidth = (beatDurationInMilis / 1000) * timelinePixelFactor;
-    let iter = 0;
-    const bpmSnapGridLines = [];
+    const lines = [];
 
     for (let i = 0; i < durationInMilis; i += beatDurationInMilis) {
-      bpmSnapGridLines.push(
+      lines.push(
         <div
           key={i}
           className="absolute h-full outline-dashed outline-[#333333] z-[10] pointer-events-none"
           style={{
             width: `${gridWidth}px`,
-            left: `${gridWidth * iter}px`
+            left: `${(i / 1000) * timelinePixelFactor}px`
           }}
         ></div>
       );
-      iter++;
     }
 
-    return bpmSnapGridLines;
+    return lines;
   }, [bpmValue, durationInMilis, timelinePixelFactor]);
+
+  return <>{bpmSnapGridLines}</>;
 }
