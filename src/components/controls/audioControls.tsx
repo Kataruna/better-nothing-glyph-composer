@@ -286,18 +286,18 @@ export default function AudioControlComponent({
       <div
         ref={playControlsBarRef}
         // putting same width contraints for main upper UI but as max width!
-        className={`flex justify-evenly items-center border rounded-lg border-white p-4 bg-[#111111] z-[15] max-w-[2280px] ${
+        className={`w-96 fixed left-3 flex justify-evenly items-center border rounded-lg border-white p-4 bg-[#111111] z-[15] max-w-[2280px] ${
           playin ? 'animate-pulse' : ''
         }  hover:shadow-[0px_0px_10px_1px_#777777]`}
-        style={{
-          animationDuration: '1.5s',
-          width: `${kWidthBound - 0.5}%`,
-          position: 'fixed',
-          top: scrollY > 390 ? `40px` : `calc(410px - ${scrollY - 5}px)`,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          transition: 'top 0.3s ease'
-        }}
+        // style={{
+        //   animationDuration: '1.5s',
+        //   width: `${kWidthBound - 0.5}%`,
+        //   position: 'fixed',
+        //   top: scrollY > 390 ? `40px` : `calc(410px - ${scrollY - 5}px)`,
+        //   left: '50%',
+        //   transform: 'translateX(-50%)',
+        //   transition: 'top 0.3s ease'
+        // }}
       >
         <button onClick={() => player.stop()} title={'Stop'} aria-label="Stop audio button">
           <Square />
