@@ -7,6 +7,7 @@ import useGlobalAppStore from '@/lib/timeline_state';
 import { showPopUp } from '@/lib/helpers';
 import { kMaxBrightness } from '@/lib/consts';
 import { useRef } from 'react';
+import { Ellipsis } from 'lucide-react';
 
 export default function SettingsPanel() {
   const spanRef = useRef<HTMLLegendElement>(null);
@@ -104,30 +105,33 @@ export default function SettingsPanel() {
   return (
     <>
       {/* Config panel */}
-      <form>
-        {/* COntrol Grid - match height to left panel  */}
-        <fieldset className="grid grid-cols-2 items-center gap-2 border rounded-lg px-4 py-1 pb-3 overflow-auto hover:shadow-[0px_0px_5px_1px_#aaaaaa] duration-500 bg-[#111111] max-h-[380px]">
-          <legend
-            className="-ml-1 px-1 font-medium font-[ndot] text-lg tracking-wide  "
-            ref={spanRef}
-            onMouseLeave={() => {
-              if (spanRef.current) {
-                spanRef.current.style.textShadow = '';
-              }
-            }}
-            onMouseEnter={() => {
-              if (spanRef.current) {
-                spanRef.current.style.textShadow = '#fff 8px 0 20px';
-              }
-            }}
-          >
-            SETTINGS
-          </legend>
-          {/* Configure Device */}
-          <Label htmlFor="multiSelect" className="text-lg font-light">
-            Device
-          </Label>
-          <DeviceChoiceComponent />
+      <div className="dropdown dropdown-left">
+        <div tabIndex={0} role="button" className="btn w-12 m-1 rounded-full"><Ellipsis/></div>
+        <ul tabIndex={0} className="dropdown-content bg-base-100 rounded-box z-[1] w-72 p-2 shadow">
+          <form>
+            {/* COntrol Grid - match height to left panel  */}
+            <fieldset className="grid grid-cols-2 items-center gap-2 border rounded-lg px-4 py-1 pb-3 overflow-auto hover:shadow-[0px_0px_5px_1px_#aaaaaa] duration-500 bg-[#111111] max-h-[380px]">
+              <legend
+                className="-ml-1 px-1 font-medium font-[ndot] text-lg tracking-wide  "
+                ref={spanRef}
+                onMouseLeave={() => {
+                  if (spanRef.current) {
+                    spanRef.current.style.textShadow = '';
+                  }
+                }}
+                onMouseEnter={() => {
+                  if (spanRef.current) {
+                    spanRef.current.style.textShadow = '#fff 8px 0 20px';
+                  }
+                }}
+              >
+                SETTINGS
+              </legend>
+              {/* Configure Device */}
+              <Label htmlFor="multiSelect" className="text-lg font-light">
+                Device
+              </Label>
+              <DeviceChoiceComponent />
 
               {/* Configure block time */}
               <Label htmlFor="newBlockDurationMilis" className="text-lg font-light">
