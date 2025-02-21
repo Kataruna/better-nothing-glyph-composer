@@ -313,7 +313,7 @@ export default function App() {
         <EditorComponent
           editorRef={editorRef}
           timelineData={timelineData}
-          // currentAudioPosition={currentPosition}
+        // currentAudioPosition={currentPosition}
         >
           <AudioControlComponent
             onCloseButtonClicked={onCloseButtonClick}
