@@ -165,7 +165,7 @@ export default function AudioControlComponent({
           e.stopPropagation(); // prevent triggering a click on the waveform
           activeRegion = region;
           region.play();
-          // @ts-expect-error works
+
           region.setOptions({
             color: regionActiveColor
           });
@@ -228,7 +228,7 @@ export default function AudioControlComponent({
 
   return (
     <>
-      <AudioControls />
+    <AudioControls />
       {isNotLoaded && (
         <div
           className="flex z-20 space-x-20
