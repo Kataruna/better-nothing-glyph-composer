@@ -57,7 +57,7 @@ Props) {
   return (
     // added to for scroll
     <div className="overflow-auto" ref={editorRef} onScroll={handleScroll}>
-      <div className="flex flex-col flex-grow min-w-max relative bg-black">
+      <div className="flex flex-col overflow-y-hidden flex-grow min-w-max relative bg-black">
         {/* AudioControls and timebar */}
         {children}
 
@@ -72,7 +72,7 @@ Props) {
           />
         )}
         <SelectionContext.Provider value={selection}>
-          <div ref={selectContainerRef}>{TimelineRows()}</div>
+          <div ref={selectContainerRef} className='h-[25rem] overflow-auto'>{TimelineRows()}</div>
         </SelectionContext.Provider>
       </div>
     </div>
@@ -86,7 +86,7 @@ Props) {
         <div
           key={i}
           title="Double tap to add a new glyph block"
-          className={`relative select-none min-h-[50px] border-dotted border-[#333]  border-t-2 hover:border-[#939393] hover:border-y-2`}
+          className={`relative select-none min-h-[40px] border-dotted border-[#333]  border-t-2 hover:border-[#939393] hover:border-y-2`}
           // ^^ controls editor row track size
           onMouseEnter={() => updateHoveredGlyphZone(i)}
           onMouseLeave={() => updateHoveredGlyphZone(null)}
