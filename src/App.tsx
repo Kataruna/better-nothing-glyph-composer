@@ -20,6 +20,8 @@ import { EditorComponent } from './components/timeline/editor';
 import AudioControlComponent from './components/controls/audioControls';
 import { kWidthBound } from './lib/consts';
 import GlyphPreviewComponent from './components/controls/glyph_preview';
+import SettingsPanel from './components/controls/settings_panel';
+
 export default function App() {
   // Promot user for exit confimation - leave it upto browser
   useEffect(() => {
@@ -256,6 +258,10 @@ export default function App() {
   // UI
   return (
     <main>
+      <div className='fixed top-3 right-3 z-50'>
+        <SettingsPanel />
+      </div>
+
       {/* Toast setup */}
       <Toaster visibleToasts={2} position="top-center" duration={700} />
       {/* Keep class here instead of main cuz otherwise grid would include toaster and that would ruin layout */}
@@ -263,7 +269,7 @@ export default function App() {
 
       {/* Upper Section - W Fixed */}
       <div
-        className={` py-4 mx-auto overflow-auto max-w-[2280px]`}
+        className={`pt-2 mx-auto overflow-hidden max-w-[2280px]`}
         style={{ width: `${kWidthBound}%` }}
       >
         {/* Mobile Only - load audio */}
